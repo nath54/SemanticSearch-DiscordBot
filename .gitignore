@@ -1,3 +1,5 @@
-/config.json
-/venv
-/models
+config.json
+venv
+models
+*.pyc
+__pycache__

@@ -24,7 +24,7 @@ class EmbeddingCalculator():
         self.get_model()
 
     def get_model(self) -> None:
-        if not os.path.exists(f"./{self.model_name}"):
+        if not os.path.exists(f"./{MODELS_PATH}/{self.model_name}"):
             self.download_model()
         else:
             self.load_downloaded_model()
@@ -33,13 +33,13 @@ class EmbeddingCalculator():
         print(f"Loading local model {self.model_name}...")
         #
         self.model = AutoModel.from_pretrained(
-                        f"./{MODELS_PATH}/{self.model_name}").to(self.device)
+                        f"./{MODELS_PATH}/{self.model_name}")
         #
         if not self.model:
             raise UserWarning("Error while loading the model")
         #
         self.tokenizer = AutoTokenizer.from_pretrained(
-                          f"./{MODELS_PATH}/{self.model_name}").to(self.device)
+                          f"./{MODELS_PATH}/{self.model_name}")
         #
         if not self.tokenizer:
             raise UserWarning("Error while loading the tokenizer")
@@ -49,28 +49,20 @@ class EmbeddingCalculator():
     def download_model(self) -> None:
         print(f"Downloading model {self.model_name}...")
         #
-        self.model = AutoModel.from_pretrained(self.model_name).to(self.device)
+        self.model = AutoModel.from_pretrained(self.model_name)
         #
         if not self.model:
             raise UserWarning("Error while downloading the model")
         #
         self.tokenizer = AutoTokenizer.from_pretrained(
-                                            self.model_name).to(self.device)
+                                            self.model_name)
         #
         if not self.tokenizer:
             raise UserWarning("Error while downloading the tokenizer")
         #
-        res: tuple[str] = self.model.save_pretrained(
-                                        f"./{MODELS_PATH}/{self.model_name}")
+        self.model.save_pretrained(f"./{MODELS_PATH}/{self.model_name}")
         #
-        if len(res) == 0:
-            raise UserWarning("Error while saving the model")
-        #
-        res = self.tokenizer.save_pretrained(
-                                f"./{MODELS_PATH}/{self.model_name}")
-        #
-        if len(res) == 0:
-            raise UserWarning("Error while saving the tokenizer")
+        self.tokenizer.save_pretrained(f"./{MODELS_PATH}/{self.model_name}")
         #
         print(f"{self.model_name} model downloaded"
               f" and saved to ./{MODELS_PATH}/{self.model_name}")
@@ -84,8 +76,13 @@ class EmbeddingCalculator():
         sentence: str
         for sentence in sentences:
             #
-            inputs = self.tokenizer(sentence,
-                                    return_tensors="pt").to(self.device)
+            inputs = self.tokenizer.encode_plus(
+                                        sentence,
+                                        truncation=True,
+                                        max_length=512,
+                                        padding="max_length",
+                                        return_tensors="pt",
+                                        )
             #
             with torch.no_grad():
                 outputs = self.model(**inputs)

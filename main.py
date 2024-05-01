@@ -15,4 +15,4 @@ if __name__ == "__main__":
         raise UserWarning("No discord api key in config !")
     #
     bot: DiscordBot = DiscordBot(config)
-    bot.run()
+    bot.run(config["discord_api_key"])
