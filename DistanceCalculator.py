@@ -33,7 +33,7 @@ class DistanceCalculator():
     def calculate_distance(self, txt1: str, txt2: str) -> float:
         embs: list[np.ndarray] = self.embedding_calc.get_sentence_embeddings(
                                                         [txt1, txt2])
-        return np.linalg.norm(embs[0] - embs[1]) - 3 * self.find_common_words(
+        return np.linalg.norm(embs[0] - embs[1]) - 1.5 * self.find_common_words(
                                                             txt1, txt2)
 
 
