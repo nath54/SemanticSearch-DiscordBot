@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from EmbeddingCalculator import EmbeddingCalculator
+from DistanceCalculator import DistanceCalculator
 import shlex
 
 class DiscordBot(commands.Bot):
@@ -15,8 +15,8 @@ class DiscordBot(commands.Bot):
         self.cmd_fcts: dict = {
             "ping": self.cmd_ping
         }
-        # Loading model
-        self.embedding_calc = EmbeddingCalculator(
+        #
+        self.distance_calc: DistanceCalculator = DistanceCalculator(
             model_name=config["model_name"],
             use_cuda=config["use_cuda"] if "use_cuda" in config else False
         )
@@ -24,6 +24,7 @@ class DiscordBot(commands.Bot):
 
     def test_config(self, config: dict[str]) -> None:
         #
+        c: str
         for c in ["discord_api_key", "discord_command_prefix", "model_name"]:
             if c not in config:
                 raise UserWarning(f"`{c}` not found in config !")
@@ -51,10 +52,65 @@ class DiscordBot(commands.Bot):
         else:
             print(f"Error: Unknown Command {lcmd[0]}")
 
-    async def cmd_ping(self, lcmd: list[str], message) -> None:
+    async def get_accessible_channels(self,
+                                      message: discord.Message
+                                        ) -> list[discord.ChannelType]:
+        """
+        Gets all channels the message author has access to
+        (read messages permission)
+
+        Args:
+            message (discord.Message): The message object
+
+        Returns:
+            list: A list of discord.TextChannel objects
+                    the author has access to
+        """
+        channels: list[discord.ChannelType] = []
+        guild: discord.Guild = message.guild
+        # Iterate only through text channels
+        channel: discord.ChannelType
+        for channel in guild.text_channels:
+            if channel.permissions_for(message.author).read_messages:
+                channels.append(channel)
+        #
+        return channels
+    
+    async def get_all_messages(self,
+                               channel: discord.ChannelType
+                                ) -> list[discord.Message]:
+        """
+        Gets all messages from a channel with pagination
+
+        Args:
+            channel (discord.TextChannel): The channel object to get
+                                                messages from
+
+        Returns:
+            list: A list of discord.Message objects from the channel
+        """
+        messages: list[discord.Message] = []
+        last_message_id: int | None = None
+        while True:
+            fetched_messages = await channel.history(
+                                        limit=100,
+                                        before=last_message_id).flatten()
+            if not fetched_messages:
+                break
+            messages.extend(fetched_messages)
+            last_message_id = messages[-1].id  # Get the ID of the last message
+        return messages
+
+    async def cmd_ping(self, lcmd: list[str],
+                       message: discord.Message) -> None:
         message.channel.send("pong")
 
-    async def cmd_search(self, lcmd: list[str], message) -> None:
-        pass
-        # TODO: get all the channels the user have access
-        # TODO: Do a semantic search to find closest messages to the search
+    async def cmd_search(self, lcmd: list[str],
+                         message: discord.Message) -> None:
+        #
+        min_msg_scores: list[tuple[discord.Message, float]] = []
+        #
+        channel: discord.ChannelType
+        for channel in self.get_accessible_channels(message):
+            pass
+

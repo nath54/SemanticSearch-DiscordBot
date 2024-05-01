@@ -1,6 +1,7 @@
 import torch
 import os
 from transformers import AutoModel, AutoTokenizer
+import numpy as np
 
 
 MODELS_PATH: str = "models/"
@@ -76,10 +77,11 @@ class EmbeddingCalculator():
 
     # Function to generate sentence embeddings
     def get_sentence_embeddings(self,
-                                sentences: list[str]) -> list[torch.Tensor]:
+                                sentences: list[str]) -> list[np.ndarray]:
         #
         embeddings: list[torch.Tensor] = []
         #
+        sentence: str
         for sentence in sentences:
             #
             inputs = self.tokenizer(sentence,
