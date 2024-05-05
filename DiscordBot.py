@@ -192,6 +192,12 @@ class DiscordBot(commands.Bot):
                 await self.get_all_messages(channel)
             #
             for msg in all_messages:
+                if msg.content.startswith(
+                    self.config["discord_command_prefix"]):
+                    continue
+                if msg.author == "Semantic Search":
+                    continue
+                #
                 d: float = fct_calc_dist(user_search, msg.content)
                 if len(min_msg_scores) < 3:
                     min_msg_scores.append(
