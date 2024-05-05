@@ -4,16 +4,6 @@ from DistanceCalculator import DistanceCalculator
 import shlex
 from aiostream import stream
 
-def get_dist_inferior(lst_msgs_with_dists: list[tuple[discord.Message, float]],
-                      distance: float) -> int:
-    #
-    i = 0
-    for t in lst_msgs_with_dists:
-        if t[1] > distance:
-            return i
-        i+=1
-    #
-    return -1
 
 class DiscordBot(commands.Bot):
     def __init__(self, config: dict[str]) -> None:
@@ -145,6 +135,52 @@ class DiscordBot(commands.Bot):
         #
         await message.reply(msg_help)
 
+    async def update_search(self,
+                            taille_buffer: int,
+                            buffer_bis: list[discord.Message],
+                            min_msg_scores: list[tuple[discord.Message, float]],
+                            dists: list[float],
+                            message: discord.Message,
+                            msg_reply: discord.Message | None
+        ) -> tuple[list[tuple[discord.Message, float]], discord.Message | None]:
+        #
+        for i in range(taille_buffer):
+            #
+            d: float = dists[i]
+            msg_act: discord.Message = buffer_bis[i]
+            #
+            if len(min_msg_scores) < 3:
+                min_msg_scores.append(
+                    (msg_act, d)
+                )
+            else:
+                min_msg_scores.sort(key=lambda t: t[1])
+                #
+                update_msg: bool = False
+                #
+                if min_msg_scores[-1][1] > d:
+                    min_msg_scores[-1] = (msg_act, d)
+                    update_msg = True
+                #
+                if msg_reply is None:
+                    update_msg = True
+                    msg_reply = await message.reply("Searching...")
+                #
+                if update_msg:
+                    last_update = 0
+                    #
+                    txt_reply = "Searching...\nCurrent Result:"
+                    i: int = 1
+                    for t in min_msg_scores:
+                        txt_reply += f"\n {i}) {t[0].jump_url}"\
+                                    f"(distance: {t[1]})"
+                        i += 1
+                    #
+                    await msg_reply.edit(content=txt_reply)
+        #
+        return min_msg_scores, msg_reply
+
+
     async def search(self,
                      lcmd: list[str],
                      message: discord.Message,
@@ -186,10 +222,17 @@ class DiscordBot(commands.Bot):
             all_accessibles_channels = \
                 await self.get_accessible_channels_for_user(message)
         #
+        msg_reply: discord.Message | None = None
+        #
         for channel in all_accessibles_channels:
             #
             all_messages: list[discord.Message] = \
                 await self.get_all_messages(channel)
+            #
+            buffer_bis: list[discord.Message] = []
+            buffer: list[str] = []
+            taille_buffer: int = 0
+            taille_max_buffer: int = 50
             #
             for msg in all_messages:
                 if msg.content.startswith(
@@ -198,15 +241,39 @@ class DiscordBot(commands.Bot):
                 if msg.author == "Semantic Search":
                     continue
                 #
-                d: float = fct_calc_dist(user_search, msg.content)
-                if len(min_msg_scores) < 3:
-                    min_msg_scores.append(
-                        (msg, d)
+                buffer_bis.append(msg)
+                buffer.append(msg.content)
+                taille_buffer += 1
+                if taille_buffer >= taille_max_buffer:
+                    dists: list[float] = fct_calc_dist(user_search, buffer)
+                    #
+                    min_msg_scores, msg_reply = await self.update_search(
+                        taille_buffer,
+                        buffer_bis,
+                        min_msg_scores,
+                        dists,
+                        message,
+                        msg_reply
                     )
-                else:
-                    idx: int = get_dist_inferior(min_msg_scores, d)
-                    if idx != -1:
-                        min_msg_scores[idx] = (msg, d)
+                    taille_buffer = 0
+                    buffer = []
+                    buffer_bis = []
+        #
+        if taille_buffer > 0:
+            #
+            dists: list[float] = fct_calc_dist(user_search, buffer)
+            #
+            min_msg_scores, msg_reply = await self.update_search(
+                taille_buffer,
+                buffer_bis,
+                min_msg_scores,
+                dists,
+                message,
+                msg_reply
+            )
+            taille_buffer = 0
+            buffer = []
+            buffer_bis = []
         #
         min_msg_scores.sort(key=lambda t: t[1])
         #
@@ -216,7 +283,11 @@ class DiscordBot(commands.Bot):
             txt_reply += f"\n {i}) {t[0].jump_url} (distance: {t[1]})"
             i += 1
         #
-        await message.reply(txt_reply)
+        if msg_reply is None:
+            await message.reply(content=txt_reply)
+        else:
+            await msg_reply.edit(content=txt_reply)
+        
         
 
     async def cmd_search(self, lcmd: list[str],

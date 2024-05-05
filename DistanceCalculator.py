@@ -31,33 +31,35 @@ class DistanceCalculator():
         return len(common_words)
     
     
-    def calculate_distance_embed(self, txt1: str, txt2: str, ) -> float:
+    def calculate_distance_embed(self, txt1: str, lst: list[str]) -> float:
         #
         embs: list[np.ndarray] = self.embedding_calc.get_sentence_embeddings(
-                                                        [txt1, txt2])
+                                                        [txt1] + lst)
         #
-        return np.linalg.norm(embs[0] - embs[1])
+        return [np.linalg.norm(embs[0] - embs[i+1]) for i in range(0, len(lst))]
 
 
-    def calculate_distance_common_words(self, txt1: str, txt2: str) -> float:
+    def calculate_distance_common_words(self,
+                                        txt1: str,
+                                        lst: list[str]) -> float:
         #
-        embs: list[np.ndarray] = self.embedding_calc.get_sentence_embeddings(
-                                                        [txt1, txt2])
-        #
-        return -self.find_common_words(txt1, txt2)
+        return [-self.find_common_words(txt1, lst[i]) \
+                    for i in range(0, len(lst))]
 
 
     def calculate_distance_both(self,
                                 txt1: str,
-                                txt2: str,
+                                lst: list[str],
                                 coef_common_words: float = 1.0
                                ) -> float:
         #
         embs: list[np.ndarray] = self.embedding_calc.get_sentence_embeddings(
-                                                        [txt1, txt2])
+                                                        [txt1] + lst)
         #
-        return np.linalg.norm(embs[0] - embs[1]) \
-                - coef_common_words * self.find_common_words(txt1, txt2)
+        return [
+            np.linalg.norm(embs[0] - embs[i+1])\
+                - coef_common_words * self.find_common_words(txt1, lst[i]) \
+            for i in range(0, len(lst))]
 
 
 
