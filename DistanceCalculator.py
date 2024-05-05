@@ -29,11 +29,35 @@ class DistanceCalculator():
         common_words = words1.intersection(words2)
 
         return len(common_words)
-
-    def calculate_distance(self, txt1: str, txt2: str) -> float:
+    
+    
+    def calculate_distance_embed(self, txt1: str, txt2: str, ) -> float:
+        #
         embs: list[np.ndarray] = self.embedding_calc.get_sentence_embeddings(
                                                         [txt1, txt2])
-        return np.linalg.norm(embs[0] - embs[1]) - 1.5 * self.find_common_words(
-                                                            txt1, txt2)
+        #
+        return np.linalg.norm(embs[0] - embs[1])
+
+
+    def calculate_distance_common_words(self, txt1: str, txt2: str) -> float:
+        #
+        embs: list[np.ndarray] = self.embedding_calc.get_sentence_embeddings(
+                                                        [txt1, txt2])
+        #
+        return -self.find_common_words(txt1, txt2)
+
+
+    def calculate_distance_both(self,
+                                txt1: str,
+                                txt2: str,
+                                coef_common_words: float = 1.0
+                               ) -> float:
+        #
+        embs: list[np.ndarray] = self.embedding_calc.get_sentence_embeddings(
+                                                        [txt1, txt2])
+        #
+        return np.linalg.norm(embs[0] - embs[1]) \
+                - coef_common_words * self.find_common_words(txt1, txt2)
+
 
 

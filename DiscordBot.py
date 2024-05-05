@@ -29,8 +29,11 @@ class DiscordBot(commands.Bot):
                          intents=intents)
         #
         self.cmd_fcts: dict = {
+            "help": self.cmd_help,
             "ping": self.cmd_ping,
-            "search": self.cmd_search
+            "search": self.cmd_search,
+            "search_simple": self.cmd_search_simple,
+            "search_only_embed": self.cmd_search_only_embed
         }
         #
         self.distance_calc: DistanceCalculator = DistanceCalculator(
@@ -129,10 +132,24 @@ class DiscordBot(commands.Bot):
 
     async def cmd_ping(self, lcmd: list[str],
                        message: discord.Message) -> None:
-        await message.channel.send("pong")
+        await message.reply("pong")
 
-    async def cmd_search(self, lcmd: list[str],
-                         message: discord.Message) -> None:
+    async def cmd_help(self, lcmd: list[str],
+                       message: discord.Message) -> None:
+        #
+        msg_help: str = "This is a bot for semantic search.\n" \
+                        "List of commands :"
+        #
+        for c in self.cmd_fcts:
+            msg_help += f"\n    - {c}"
+        #
+        await message.reply(msg_help)
+
+    async def search(self,
+                     lcmd: list[str],
+                     message: discord.Message,
+                     fct_calc_dist: callable
+                    )  -> None:
         #
         option_here: bool = False
         user_search: str = ""
@@ -175,8 +192,7 @@ class DiscordBot(commands.Bot):
                 await self.get_all_messages(channel)
             #
             for msg in all_messages:
-                d: float = self.distance_calc.calculate_distance(user_search,
-                                                                 msg.content)
+                d: float = fct_calc_dist(user_search, msg.content)
                 if len(min_msg_scores) < 3:
                     min_msg_scores.append(
                         (msg, d)
@@ -195,4 +211,26 @@ class DiscordBot(commands.Bot):
             i += 1
         #
         await message.reply(txt_reply)
+        
+
+    async def cmd_search(self, lcmd: list[str],
+                         message: discord.Message) -> None:
+        #
+        await self.search(lcmd,
+                          message,
+                          self.distance_calc.calculate_distance_both)
+    
+    async def cmd_search_simple(self, lcmd: list[str],
+                         message: discord.Message) -> None:
+        #
+        await self.search(lcmd,
+                          message,
+                          self.distance_calc.calculate_distance_common_words)
+    
+    async def cmd_search_only_embed(self, lcmd: list[str],
+                         message: discord.Message) -> None:
+        #
+        await self.search(lcmd,
+                          message,
+                          self.distance_calc.calculate_distance_embed)
 
