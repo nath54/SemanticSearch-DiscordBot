@@ -15,7 +15,11 @@ You will need to have the following python libraries to be able to launch this p
 - transformers
 - torch
 
-So, if you are missing ones, you can install them with `your_python_executable -m pip install lib_1, lib_2, ..., lib_n`
+So, if you are missing ones, you can install them with:
+
+```bash
+python3 -m pip install lib_1 lib_2 ... lib_n
+```
 
 
 ### Create a discord bot
