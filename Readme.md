@@ -10,10 +10,10 @@ The goal of this project is to build a small Discord Bot that search messages in
 ### Dependencies
 
 You will need to have the following python libraries to be able to launch this program: 
-    * discord
-    * numpy
-    * transformers
-    * torch
+- discord
+- numpy
+- transformers
+- torch
 
 So, if you are missing ones, you can install them with "your_python_executable -m pip install lib_1, lib_2, ..., lib_n"
 
