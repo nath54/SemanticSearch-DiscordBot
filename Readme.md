@@ -20,7 +20,7 @@ So, if you are missing ones, you can install them with "your_python_executable -
 
 ### Create a discord bot
 
-You will need to create a discord bot on the discord website, you can follow theses instructions: ![https://discord.com/developers/docs/quick-start/getting-started].
+You will need to create a discord bot on the discord website, you can follow theses instructions: https://discord.com/developers/docs/quick-start/getting-started.
 
 
 ### Configuration file
