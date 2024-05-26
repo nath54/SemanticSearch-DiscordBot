@@ -14,6 +14,9 @@ class DiscordBot(commands.Bot):
         self.test_config(config)
         #
         self.config: dict[str] = config
+        # Optional settings
+        if not "profiling" in self.config:
+            self.config["profiling"] = 0
         #
         intents = discord.Intents(messages=True, guilds=True)
         intents.message_content = True
@@ -30,8 +33,7 @@ class DiscordBot(commands.Bot):
         }
         #
         self.distance_calc: DistanceCalculator = DistanceCalculator(
-            model_name=config["model_name"],
-            use_cuda=config["use_cuda"] if "use_cuda" in config else False
+            config=self.config
         )
         #
 
@@ -53,11 +55,11 @@ class DiscordBot(commands.Bot):
 
         msg: str = message.content.lower()
 
-        print(f"Received something "
-              f"(content: {message.content}, "
-              f"author: {message.author}, "
-              f"channel: {message.channel}, "
-              f"guild: {message.guild}")
+        # print(f"Received something "
+        #       f"(content: {message.content}, "
+        #       f"author: {message.author}, "
+        #       f"channel: {message.channel}, "
+        #       f"guild: {message.guild}")
 
         if not msg.startswith(self.config["discord_command_prefix"]):
             return  # Ignore messages that doesn't start by command prefix
@@ -69,7 +71,8 @@ class DiscordBot(commands.Bot):
         if lcmd[0] in self.cmd_fcts:
             await self.cmd_fcts[lcmd[0]](lcmd, message)
         else:
-            print(f"Error: Unknown Command {lcmd[0]}")
+            pass
+            # print(f"Error: Unknown Command {lcmd[0]}")
 
     async def get_accessible_channels_for_user(self,
                                       message: discord.Message
@@ -190,7 +193,8 @@ class DiscordBot(commands.Bot):
                      fct_calc_dist: callable
                     )  -> None:
         #
-        p1: Profile = Profile("DiscordBot.py; Parsing search args")
+        if self.config["profiling"] == 1:
+            p1: Profile = Profile("DiscordBot.py; Parsing search args")
         #
         option_here: bool = False
         user_search: str = ""
@@ -210,7 +214,8 @@ class DiscordBot(commands.Bot):
             elif user_search == "":
                 user_search = l
         #
-        p1.finished()
+        if self.config["profiling"] == 1:
+            p1.finished()
         #
         if user_search == "":
             return
@@ -222,7 +227,8 @@ class DiscordBot(commands.Bot):
         #
         all_accessibles_channels: list[discord.TextChannel] = []
         #
-        p2: Profile = Profile("DiscordBot.py; Get all accessible channels")
+        if self.config["profiling"] == 1:
+            p2: Profile = Profile("DiscordBot.py; Get all accessible channels")
         #
         if option_here:
             all_accessibles_channels = [message.channel]
@@ -230,23 +236,28 @@ class DiscordBot(commands.Bot):
             all_accessibles_channels = \
                 await self.get_accessible_channels_for_user(message)
         #
-        p2.finished()
+        if self.config["profiling"] == 1:
+            p2.finished()
         #
-        p3: Profile = Profile("DiscordBot.py; Total search")
+        if self.config["profiling"] == 1:
+            p3: Profile = Profile("DiscordBot.py; Total search")
         #
         msg_reply: discord.Message | None = None
         total_msgs_processed: int = 0
         #
-        p5: Profile = Profile("DiscordBot.py; Embed Messages")
+        if self.config["profiling"] == 1:
+            p5: Profile = Profile("DiscordBot.py; Embed Messages")
         #
         for channel in all_accessibles_channels:
             #
-            p4: Profile = Profile(f"DiscordBot.py; Get all accessible messages from channel : <<{channel.name}>>")
+            if self.config["profiling"] == 1:
+                p4: Profile = Profile(f"DiscordBot.py; Get all accessible messages from channel : <<{channel.name}>>")
             #
             all_messages: list[discord.Message] = \
                 await self.get_all_messages(channel)
             #
-            p4.finished()
+            if self.config["profiling"] == 1:
+                p4.finished()
             #
             buffer_bis: list[discord.Message] = []
             buffer: list[str] = []
@@ -266,7 +277,8 @@ class DiscordBot(commands.Bot):
                 if taille_buffer >= taille_max_buffer:
                     dists: list[float] = fct_calc_dist(user_search, buffer)
                     #
-                    p5.intermediate_update([f"Buffer size : {taille_buffer}"])
+                    if self.config["profiling"] == 1:
+                        p5.intermediate_update([f"Buffer size : {taille_buffer}"])
                     #
                     min_msg_scores, msg_reply = await self.update_search(
                         taille_buffer,
@@ -298,7 +310,8 @@ class DiscordBot(commands.Bot):
             buffer = []
             buffer_bis = []
         #
-        p5.finished([f"Total msgs processed: {total_msgs_processed}"])
+        if self.config["profiling"] == 1:
+            p5.finished([f"Total msgs processed: {total_msgs_processed}"])
         #
         min_msg_scores.sort(key=lambda t: t[1])
         #
@@ -308,7 +321,8 @@ class DiscordBot(commands.Bot):
             txt_reply += f"\n {i}) {t[0].jump_url} (distance: {t[1]})"
             i += 1
         #
-        p3.finished()
+        if self.config["profiling"] == 1:
+            p3.finished()
         #
         if msg_reply is None:
             await message.reply(content=txt_reply)
@@ -320,27 +334,39 @@ class DiscordBot(commands.Bot):
     async def cmd_search(self, lcmd: list[str],
                          message: discord.Message) -> None:
         #
-        p: Profile = Profile("DiscordBot.py; search.calculate_distance_both")
+        if self.config["profiling"] == 1:
+            p: Profile = Profile("DiscordBot.py; search.calculate_distance_both")
+        #
         await self.search(lcmd,
                           message,
                           self.distance_calc.calculate_distance_both)
-        p.finished()
+        #
+        if self.config["profiling"] == 1:
+            p.finished()
         
     
     async def cmd_search_simple(self, lcmd: list[str],
                          message: discord.Message) -> None:
         #
-        p: Profile = Profile("DiscordBot.py; search.calculate_distance_common_words")
+        if self.config["profiling"] == 1:
+            p: Profile = Profile("DiscordBot.py; search.calculate_distance_common_words")
+        #
         await self.search(lcmd,
                           message,
                           self.distance_calc.calculate_distance_common_words)
-        p.finished()
+        #
+        if self.config["profiling"] == 1:
+            p.finished()
     
     async def cmd_search_only_embed(self, lcmd: list[str],
                          message: discord.Message) -> None:
         #
-        p: Profile = Profile("DiscordBot.py; search.calculate_distance_embed")
+        if self.config["profiling"] == 1:
+            p: Profile = Profile("DiscordBot.py; search.calculate_distance_embed")
+        #
         await self.search(lcmd,
                           message,
                           self.distance_calc.calculate_distance_embed)
-        p.finished()
+        #
+        if self.config["profiling"] == 1:
+            p.finished()

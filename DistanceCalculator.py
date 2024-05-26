@@ -1,12 +1,12 @@
 from EmbeddingCalculator import EmbeddingCalculator
 import numpy as np
 
+#
 class DistanceCalculator():
-    def __init__(self, model_name: str, use_cuda: bool = False):
+    def __init__(self, config: dict):
         #
         self.embedding_calc: EmbeddingCalculator = EmbeddingCalculator(
-            model_name=model_name,
-            use_cuda=use_cuda
+            config=config
         )
         #
 

@@ -10,11 +10,12 @@ MODELS_PATH: str = "models/"
 
 #
 class EmbeddingCalculator():
-    def __init__(self, model_name: str, use_cuda: bool = False) -> None:
-        self.model_name: str = model_name
+    def __init__(self, config: dict) -> None:
+        self.config = config
+        self.model_name: str = self.config["model_name"]
         self.model: AutoModel | None = None
         self.tokenizer: AutoTokenizer | None = None
-        self.use_cuda: bool = use_cuda
+        self.use_cuda: bool = (self.config["use_cuda"] == 1)
         #
         if self.use_cuda and not torch.cuda.is_available():
             raise UserWarning("Try to use cuda, but cuda is not available")
@@ -75,7 +76,8 @@ class EmbeddingCalculator():
         #
         embeddings: list[torch.Tensor] = []
         #
-        p1: Profile = Profile(f"EmbeddingCalculator.py; Tokenize sentences")
+        if self.config["profiling"] == 1:
+            p1: Profile = Profile(f"EmbeddingCalculator.py; Tokenize sentences")
     
         #
         inputs = self.tokenizer(sentences,
@@ -93,9 +95,11 @@ class EmbeddingCalculator():
         #                             return_tensors="pt",
         #                             )
         #
-        p1.finished([f"Nb sentences tokenized: {len(sentences)}"])
+        if self.config["profiling"] == 1:
+            p1.finished([f"Nb sentences tokenized: {len(sentences)}"])
         #
-        p2: Profile = Profile("EmbeddingCalculator.py; Calculate embedding")
+        if self.config["profiling"] == 1:
+            p2: Profile = Profile("EmbeddingCalculator.py; Calculate embedding")
         #
         with torch.no_grad():
             outputs = self.model(**inputs)
@@ -107,6 +111,7 @@ class EmbeddingCalculator():
             embeddings += [s.cpu().numpy() for s in sentence_embedding]
             #
         #
-        p2.finished([f"Nb sentence tokenized: {len(sentences)}"])
+        if self.config["profiling"] == 1:
+            p2.finished([f"Nb sentence tokenized: {len(sentences)}"])
         #
         return embeddings

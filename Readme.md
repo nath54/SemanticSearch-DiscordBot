@@ -20,7 +20,7 @@ So, if you are missing ones, you can install them with "your_python_executable -
 
 ### Create a discord bot
 
-You will need to create a discord bot on the discord website, you can follow theses instructions: [](https://discord.com/developers/docs/quick-start/getting-started).
+You will need to create a discord bot on the discord website, you can follow theses instructions: !()[https://discord.com/developers/docs/quick-start/getting-started].
 
 
 ### Configuration file
@@ -29,7 +29,7 @@ You will need to create a configuration file to launch this program. The configu
 
 - `discord_api_key`: your discord api key to connect the bot to discord, you can find it on the discord website.
 - `discord_command_prefix`: This is the prefix you want your bot listen to detect a command search.
-- `model_name` This is the model you want to use for calculate messages embedding for semantic search.
+- `model_name` This is the model you want to use for calculate messages embedding for semantic search. It is normally compatible with all the llm models that returns an embedding vector of the given input text sequence.
 - `use_cuda` Set to 1 if you want to use your nvidia gpu to calculate embeddings, if you don't have nvidia gpu or/and you want to use your cpu instead, set this option to 0.
 
 The configuration use the JSON format. The configuration file path from the project root folder is `./config.txt`
@@ -44,6 +44,39 @@ Here is an example of a configuration file:
     "use_cuda": 1
 }
 ```
+
+You can add an optional option to activate profiling and check the time of execution of different part of the code on the terminal with :
+
+```json
+{
+    ...
+    "profiling": 1
+}
+```
+
+### Minimal requirements
+
+You need to have an hardware configuration that has at minimum:
+- RAM > ~1Gb
+- (if using cuda) Nvidia gpu with > ~500Mb
+
+These requirements are based on using Bert-large or E5-large. However, using larger models like these will require more computational resources, while smaller models will require less.
+
+In a general manner, check the requirement on the hugging face page of the model you want to use.
+
+This program has only been tested on Ubuntu, so there can be issues with running it with other Operating Systems because it has not been tested on them.
+
+
+### How to start the server
+
+You can easily start the discord bot server with the command:
+
+```bash
+python3 main.py
+```
+
+If the discord api is too verbose for you on the fact the server isn't really responding (because a search may takes time and may be heavy on resources), you can add to the command line " 2> err_log.txt" (that will redirect all the errors message to the file err_log.txt)
+
 
 ### How to use the bot in discord
 
