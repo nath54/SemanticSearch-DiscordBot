@@ -15,7 +15,7 @@ You will need to have the following python libraries to be able to launch this p
 - transformers
 - torch
 
-So, if you are missing ones, you can install them with "your_python_executable -m pip install lib_1, lib_2, ..., lib_n"
+So, if you are missing ones, you can install them with `your_python_executable -m pip install lib_1, lib_2, ..., lib_n`
 
 
 ### Create a discord bot
@@ -80,7 +80,7 @@ If the discord api is too verbose for you on the fact the server isn't really re
 
 ### How to use the bot in discord
 
-For the examples, we suppose that the configuration `discord_command_prefix` is set to "!"
+For the examples, we suppose that the configuration `discord_command_prefix` is set to "`!`"
 
 To use the bot to search a sentence, you must be in a channel accessible by the bot, and write one of the following commands:
 
