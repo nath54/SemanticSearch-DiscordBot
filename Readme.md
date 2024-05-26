@@ -75,7 +75,7 @@ You can easily start the discord bot server with the command:
 python3 main.py
 ```
 
-If the discord api is too verbose for you on the fact the server isn't really responding (because a search may takes time and may be heavy on resources), you can add to the command line " 2> err_log.txt" (that will redirect all the errors message to the file err_log.txt)
+If the discord api is too verbose for you on the fact the server isn't really responding (because a search may takes time and may be heavy on resources), you can add to the command line ` 2> err_log.txt` (that will redirect all the errors message to the file `err_log.txt`)
 
 
 ### How to use the bot in discord
