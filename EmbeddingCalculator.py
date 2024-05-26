@@ -3,10 +3,12 @@ import os
 from transformers import AutoModel, AutoTokenizer
 import numpy as np
 
+from profiling import Profile
+
 
 MODELS_PATH: str = "models/"
 
-
+#
 class EmbeddingCalculator():
     def __init__(self, model_name: str, use_cuda: bool = False) -> None:
         self.model_name: str = model_name
@@ -73,23 +75,38 @@ class EmbeddingCalculator():
         #
         embeddings: list[torch.Tensor] = []
         #
-        sentence: str
-        for sentence in sentences:
+        p1: Profile = Profile(f"EmbeddingCalculator.py; Tokenize sentences")
+    
+        #
+        inputs = self.tokenizer(sentences,
+                                max_length=512,
+                                truncation=True,
+                                padding=True,
+                                return_tensors="pt",
+                                return_attention_mask=True)
+        
+        # inputs = self.tokenizer.encode_plus(
+        #                             sentences,
+        #                             truncation=True,
+        #                             max_length=512,
+        #                             padding="max_length",
+        #                             return_tensors="pt",
+        #                             )
+        #
+        p1.finished([f"Nb sentences tokenized: {len(sentences)}"])
+        #
+        p2: Profile = Profile("EmbeddingCalculator.py; Calculate embedding")
+        #
+        with torch.no_grad():
+            outputs = self.model(**inputs)
             #
-            inputs = self.tokenizer.encode_plus(
-                                        sentence,
-                                        truncation=True,
-                                        max_length=512,
-                                        padding="max_length",
-                                        return_tensors="pt",
-                                        )
+            last_hidden_state = outputs.last_hidden_state
+            # Extract the sentence embedding
+            #  (consider averaging or using other methods)
+            sentence_embedding = torch.mean(last_hidden_state, dim=1)
+            embeddings += [s.cpu().numpy() for s in sentence_embedding]
             #
-            with torch.no_grad():
-                outputs = self.model(**inputs)
-                last_hidden_state = outputs.last_hidden_state
-                # Extract the sentence embedding
-                #  (consider averaging or using other methods)
-                sentence_embedding = torch.mean(last_hidden_state, dim=1)
-                embeddings.append(sentence_embedding.cpu().numpy())
-                #
+        #
+        p2.finished([f"Nb sentence tokenized: {len(sentences)}"])
+        #
         return embeddings

@@ -5,6 +5,9 @@ import shlex
 from aiostream import stream
 
 
+from profiling import Profile
+
+
 class DiscordBot(commands.Bot):
     def __init__(self, config: dict[str]) -> None:
         #
@@ -187,6 +190,8 @@ class DiscordBot(commands.Bot):
                      fct_calc_dist: callable
                     )  -> None:
         #
+        p1: Profile = Profile("DiscordBot.py; Parsing search args")
+        #
         option_here: bool = False
         user_search: str = ""
         #
@@ -205,8 +210,9 @@ class DiscordBot(commands.Bot):
             elif user_search == "":
                 user_search = l
         #
+        p1.finished()
+        #
         if user_search == "":
-            
             return
         #
         min_msg_scores: list[tuple[discord.Message, float]] = []
@@ -216,23 +222,36 @@ class DiscordBot(commands.Bot):
         #
         all_accessibles_channels: list[discord.TextChannel] = []
         #
+        p2: Profile = Profile("DiscordBot.py; Get all accessible channels")
+        #
         if option_here:
             all_accessibles_channels = [message.channel]
         else:
             all_accessibles_channels = \
                 await self.get_accessible_channels_for_user(message)
         #
+        p2.finished()
+        #
+        p3: Profile = Profile("DiscordBot.py; Total search")
+        #
         msg_reply: discord.Message | None = None
+        total_msgs_processed: int = 0
+        #
+        p5: Profile = Profile("DiscordBot.py; Embed Messages")
         #
         for channel in all_accessibles_channels:
+            #
+            p4: Profile = Profile(f"DiscordBot.py; Get all accessible messages from channel : <<{channel.name}>>")
             #
             all_messages: list[discord.Message] = \
                 await self.get_all_messages(channel)
             #
+            p4.finished()
+            #
             buffer_bis: list[discord.Message] = []
             buffer: list[str] = []
             taille_buffer: int = 0
-            taille_max_buffer: int = 50
+            taille_max_buffer: int = 16
             #
             for msg in all_messages:
                 if msg.content.startswith(
@@ -247,6 +266,8 @@ class DiscordBot(commands.Bot):
                 if taille_buffer >= taille_max_buffer:
                     dists: list[float] = fct_calc_dist(user_search, buffer)
                     #
+                    p5.intermediate_update([f"Buffer size : {taille_buffer}"])
+                    #
                     min_msg_scores, msg_reply = await self.update_search(
                         taille_buffer,
                         buffer_bis,
@@ -255,6 +276,7 @@ class DiscordBot(commands.Bot):
                         message,
                         msg_reply
                     )
+                    total_msgs_processed += taille_buffer
                     taille_buffer = 0
                     buffer = []
                     buffer_bis = []
@@ -271,9 +293,12 @@ class DiscordBot(commands.Bot):
                 message,
                 msg_reply
             )
+            total_msgs_processed += taille_buffer
             taille_buffer = 0
             buffer = []
             buffer_bis = []
+        #
+        p5.finished([f"Total msgs processed: {total_msgs_processed}"])
         #
         min_msg_scores.sort(key=lambda t: t[1])
         #
@@ -282,6 +307,8 @@ class DiscordBot(commands.Bot):
         for t in min_msg_scores:
             txt_reply += f"\n {i}) {t[0].jump_url} (distance: {t[1]})"
             i += 1
+        #
+        p3.finished()
         #
         if msg_reply is None:
             await message.reply(content=txt_reply)
@@ -293,21 +320,27 @@ class DiscordBot(commands.Bot):
     async def cmd_search(self, lcmd: list[str],
                          message: discord.Message) -> None:
         #
+        p: Profile = Profile("DiscordBot.py; search.calculate_distance_both")
         await self.search(lcmd,
                           message,
                           self.distance_calc.calculate_distance_both)
+        p.finished()
+        
     
     async def cmd_search_simple(self, lcmd: list[str],
                          message: discord.Message) -> None:
         #
+        p: Profile = Profile("DiscordBot.py; search.calculate_distance_common_words")
         await self.search(lcmd,
                           message,
                           self.distance_calc.calculate_distance_common_words)
+        p.finished()
     
     async def cmd_search_only_embed(self, lcmd: list[str],
                          message: discord.Message) -> None:
         #
+        p: Profile = Profile("DiscordBot.py; search.calculate_distance_embed")
         await self.search(lcmd,
                           message,
                           self.distance_calc.calculate_distance_embed)
-
+        p.finished()

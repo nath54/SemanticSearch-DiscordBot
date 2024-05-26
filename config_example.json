@@ -1,0 +1,6 @@
+{
+    "discord_api_key": "PUT HERE DISCORD API KEY",
+    "discord_command_prefix": "!",
+    "model_name": "intfloat/multilingual-e5-large",
+    "use_cuda": 0
+}
