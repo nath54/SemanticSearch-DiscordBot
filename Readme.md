@@ -26,10 +26,11 @@ You will need to create a discord bot on the discord website, you can follow the
 ### Configuration file
 
 You will need to create a configuration file to launch this program. The configuration have 4 parametrable options:
-    * `discord_api_key`: your discord api key to connect the bot to discord, you can find it on the discord website.
-    * `discord_command_prefix`: This is the prefix you want your bot listen to detect a command search.
-    * `model_name` This is the model you want to use for calculate messages embedding for semantic search.
-    * `use_cuda` Set to 1 if you want to use your nvidia gpu to calculate embeddings, if you don't have nvidia gpu or/and you want to use your cpu instead, set this option to 0.
+
+- `discord_api_key`: your discord api key to connect the bot to discord, you can find it on the discord website.
+- `discord_command_prefix`: This is the prefix you want your bot listen to detect a command search.
+- `model_name` This is the model you want to use for calculate messages embedding for semantic search.
+- `use_cuda` Set to 1 if you want to use your nvidia gpu to calculate embeddings, if you don't have nvidia gpu or/and you want to use your cpu instead, set this option to 0.
 
 The configuration use the JSON format. The configuration file path from the project root folder is `./config.txt`
 
@@ -49,11 +50,12 @@ Here is an example of a configuration file:
 For the examples, we suppose that the configuration `discord_command_prefix` is set to "!"
 
 To use the bot to search a sentence, you must be in a channel accessible by the bot, and write one of the following commands:
-    * `!search "SEARCH_INPUT"`: search with a mix of semantic search + simple word search
-    * `!search_simple "SEARCH_INPUT"`: search with a simple word search
-    * `!search_only_embed "SEARCH_INPUT"`: search with semantic search
-    * `!ping`: test if the bot is working
-    * `!help`: display an help message
+
+- `!search "SEARCH_INPUT"`: search with a mix of semantic search + simple word search
+- `!search_simple "SEARCH_INPUT"`: search with a simple word search
+- `!search_only_embed "SEARCH_INPUT"`: search with semantic search
+- `!ping`: test if the bot is working
+- `!help`: display an help message
 
 
 All the commands accepts the `--here` option, which limits the search to the discord channel where the command is typed.
