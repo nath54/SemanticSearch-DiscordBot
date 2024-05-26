@@ -3,3 +3,4 @@ venv
 models
 *.pyc
 __pycache__
+*log*
