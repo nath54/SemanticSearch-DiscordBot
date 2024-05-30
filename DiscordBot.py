@@ -9,6 +9,9 @@ from profiling import Profile
 
 
 class DiscordBot(commands.Bot):
+    
+    
+    #
     def __init__(self, config: dict[str]) -> None:
         #
         self.test_config(config)
@@ -32,34 +35,29 @@ class DiscordBot(commands.Bot):
             "search_only_embed": self.cmd_search_only_embed
         }
         #
-        self.distance_calc: DistanceCalculator = DistanceCalculator(
-            config=self.config
-        )
-        #
+        self.distance_calc: DistanceCalculator = DistanceCalculator(config)
 
+
+    #
     def test_config(self, config: dict[str]) -> None:
         #
         c: str
         for c in ["discord_api_key", "discord_command_prefix", "model_name"]:
             if c not in config:
                 raise UserWarning(f"`{c}` not found in config !")
-        #
 
+
+    #
     async def on_ready(self) -> None:
         print(f'Logged in as {self.user} (ID: {self.user.id})')
 
 
+    #
     async def on_message(self, message: discord.Message) -> None:
         if message.author == self.user:
             return  # Ignore messages sent by ourselves
 
         msg: str = message.content.lower()
-
-        # print(f"Received something "
-        #       f"(content: {message.content}, "
-        #       f"author: {message.author}, "
-        #       f"channel: {message.channel}, "
-        #       f"guild: {message.guild}")
 
         if not msg.startswith(self.config["discord_command_prefix"]):
             return  # Ignore messages that doesn't start by command prefix
@@ -70,10 +68,9 @@ class DiscordBot(commands.Bot):
         # Command Logic 
         if lcmd[0] in self.cmd_fcts:
             await self.cmd_fcts[lcmd[0]](lcmd, message)
-        else:
-            pass
-            # print(f"Error: Unknown Command {lcmd[0]}")
 
+
+    #
     async def get_accessible_channels_for_user(self,
                                       message: discord.Message
                                         ) -> list[discord.TextChannel]:
@@ -98,6 +95,8 @@ class DiscordBot(commands.Bot):
         #
         return channels
     
+    
+    #
     async def get_all_messages(self,
                                channel: discord.TextChannel
                                 ) -> list[discord.Message]:
@@ -126,10 +125,14 @@ class DiscordBot(commands.Bot):
         #
         return messages
 
+
+    #
     async def cmd_ping(self, lcmd: list[str],
                        message: discord.Message) -> None:
         await message.reply("pong")
 
+
+    #
     async def cmd_help(self, lcmd: list[str],
                        message: discord.Message) -> None:
         #
@@ -141,6 +144,8 @@ class DiscordBot(commands.Bot):
         #
         await message.reply(msg_help)
 
+
+    #
     async def update_search(self,
                             taille_buffer: int,
                             buffer_bis: list[discord.Message],
@@ -187,6 +192,7 @@ class DiscordBot(commands.Bot):
         return min_msg_scores, msg_reply
 
 
+    #
     async def search(self,
                      lcmd: list[str],
                      message: discord.Message,
@@ -331,6 +337,7 @@ class DiscordBot(commands.Bot):
         
         
 
+    #
     async def cmd_search(self, lcmd: list[str],
                          message: discord.Message) -> None:
         #
@@ -345,6 +352,7 @@ class DiscordBot(commands.Bot):
             p.finished()
         
     
+    #
     async def cmd_search_simple(self, lcmd: list[str],
                          message: discord.Message) -> None:
         #
@@ -358,6 +366,8 @@ class DiscordBot(commands.Bot):
         if self.config["profiling"] == 1:
             p.finished()
     
+    
+    #
     async def cmd_search_only_embed(self, lcmd: list[str],
                          message: discord.Message) -> None:
         #

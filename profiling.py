@@ -2,6 +2,8 @@ import time
 
 
 class Profile():
+    
+    
     # Start of the monitored code
     def __init__(self, code_line: str):
         # Line of code to display
@@ -10,6 +12,7 @@ class Profile():
         self.start_time: float = time.time()
         # For intermediar monitor
         self.last_intermediate_time: float = time.time()
+    
     
     # Intermediate update monitor, for buffered operations for instance
     def intermediate_update(self, extra_args: list[str] = []):
@@ -24,6 +27,7 @@ class Profile():
         # Display extra args
         for ex in extra_args:
             print(f"   - {ex}\n")
+    
     
     # End of the monitored code
     def finished(self, extra_args: list[str]= []):

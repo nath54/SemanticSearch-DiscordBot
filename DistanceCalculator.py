@@ -3,13 +3,15 @@ import numpy as np
 
 #
 class DistanceCalculator():
+    
+    
+    #
     def __init__(self, config: dict):
         #
-        self.embedding_calc: EmbeddingCalculator = EmbeddingCalculator(
-            config=config
-        )
-        #
-
+        self.embedding_calc: EmbeddingCalculator = EmbeddingCalculator(config)
+     
+       
+    #
     def find_common_words(self, txt1: str, txt2: str) -> int:
         """
         Counts the number of common words between two strings (case-insensitive)
@@ -31,7 +33,10 @@ class DistanceCalculator():
         return len(common_words)
     
     
-    def calculate_distance_embed(self, txt1: str, lst: list[str]) -> float:
+    #
+    def calculate_distance_embed(self,
+                                 txt1: str,
+                                 lst: list[str]) -> list[float]:
         #
         embs: list[np.ndarray] = self.embedding_calc.get_sentence_embeddings(
                                                         [txt1] + lst)
@@ -39,19 +44,21 @@ class DistanceCalculator():
         return [np.linalg.norm(embs[0] - embs[i+1]) for i in range(0, len(lst))]
 
 
+    #
     def calculate_distance_common_words(self,
                                         txt1: str,
-                                        lst: list[str]) -> float:
+                                        lst: list[str]) -> list[float]:
         #
         return [-self.find_common_words(txt1, lst[i]) \
                     for i in range(0, len(lst))]
 
 
+    #
     def calculate_distance_both(self,
                                 txt1: str,
                                 lst: list[str],
                                 coef_common_words: float = 1.0
-                               ) -> float:
+                               ) -> list[float]:
         #
         embs: list[np.ndarray] = self.embedding_calc.get_sentence_embeddings(
                                                         [txt1] + lst)
@@ -60,6 +67,3 @@ class DistanceCalculator():
             np.linalg.norm(embs[0] - embs[i+1])\
                 - coef_common_words * self.find_common_words(txt1, lst[i]) \
             for i in range(0, len(lst))]
-
-
-
