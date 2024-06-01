@@ -1,32 +1,32 @@
 # 0 - Repas
-Repas, 0
+Repas|0
 
 # 2 - Critique culinaire
-Critique culinaire, 2
+Critique culinaire|2
 
 # 3 - Dette
-Dette, 3
+Dette|3
 
 # 6 - Sport
-Sport, 6
+Sport|6
 
 # 8 - Études
-Études, 8
+Études|8
 
 # 13 - Lecture
-Lecture, 13
+Lecture|13
 
 # 14 - Animaux
-Animaux, 14
+Animaux|14
 
 # 17 - Jardinage
-Jardinage, 17
+Jardinage|17
 
 # 18 - Technologie
-Technologie, 18
+Technologie|18
 
 # 23 - Art
-Art, 23
+Art|23
 
 # 27 - Astronomie
-Astronomie, 27
+Astronomie|27
